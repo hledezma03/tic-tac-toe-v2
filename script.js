@@ -19,7 +19,7 @@ const Gameboard = (function () {
   const getBoard = () => board;
 
   const makeMove = (cell, player) => {
-    if (board[cell] === '') {
+    if (board[cell] === "") {
         board[cell] = player
         return true;
       } else {
@@ -27,12 +27,8 @@ const Gameboard = (function () {
       }
   }
 
-  const printBoard = () => {
-    return console.log(board);
-  };
 
-
-  return {getBoard, makeMove, printBoard};
+  return {getBoard, makeMove};
 })();
 
 const GameController = (function(
@@ -59,17 +55,14 @@ const GameController = (function(
   };
   const getActivePlayer = () => activePlayer;
 
-  const printNewRound = () => {
-    board.printBoard();
-    return console.log(`${getActivePlayer().name}'s turn.`);
-  };
+
 
   const checkWinner = () => {
     const currentBoard = board.getBoard();
     for (const combination of winningCombinations) {
       const [a, b, c] = combination;
       if (currentBoard[a] && currentBoard[a] === currentBoard[b] && currentBoard[a] === currentBoard[c]) {
-        return true
+        return currentBoard[a];
       }
     }
     return false
@@ -88,14 +81,12 @@ const GameController = (function(
     const moveDone = board.makeMove(cell, getActivePlayer().marker);
     
     if (moveDone == false) {
-      console.log(`This cell is not available. Try again!`);
       return;
     } else {
       const winner = checkWinner();
+      const gameWinner = document.querySelector(".game-winner")
       if (winner) {
-        console.log(`Winner: ${getActivePlayer().name}`);
-        board.printBoard();
-        return;
+        gameWinner.textContent = `${getActivePlayer().name}`
       } 
       
       const tie = checkTie();
@@ -103,9 +94,7 @@ const GameController = (function(
         return;
       }
       
-      console.log(`${getActivePlayer().name} marked thecell ${cell}...`);
       switchPlayerTurn();
-      printNewRound();
     };
   };
 
@@ -126,13 +115,25 @@ const ScreenController = (function () {
 
     playerTurnDiv.textContent = `${activePlayer.name}'s turn...`
 
-    board.forEach((index)=> {
+    board.forEach((cell, index)=> {
       const cellButton = document.createElement("button");
       cellButton.classList.add("cell");
-      cellButton.dataset = index;
+      cellButton.textContent = cell;
+      cellButton.dataset.index = index;
       gameboard.appendChild(cellButton);
     })
   }
+  const clickHadlerBoard = (e) => {
+    const selectedCell = e.target.dataset.index;
+  
+    if (!selectedCell) return;
+  
+    game.playRound(selectedCell);
+    updateScreen();
+  };
+  gameboard.addEventListener("click", clickHadlerBoard);
+
+  updateScreen();
 })();
 
-const game = GameController;
+ScreenController;
