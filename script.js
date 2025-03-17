@@ -1,20 +1,38 @@
+const winningCombinations = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+];
+
 const Gameboard = (function () {
   const board = [];
 
   for (let i = 0; i < 9; i++) {
-    board[i] = '0';
+    board[i] = '';
   }
   
-  const getBoard = () => console.log(board);
+  const getBoard = () => board;
 
   const makeMove = (cell, player) => {
-    if (board[cell] == '0') {
+    if (board[cell] === '') {
         board[cell] = player
+        return true;
+      } else {
+        return false;
       }
   }
 
+  const printBoard = () => {
+    return console.log(board);
+  };
 
-  return {getBoard, makeMove};
+
+  return {getBoard, makeMove, printBoard};
 })();
 
 const GameController = (function(
@@ -42,23 +60,55 @@ const GameController = (function(
   const getActivePlayer = () => activePlayer;
 
   const printNewRound = () => {
-    board.getBoard();
+    board.printBoard();
+    return console.log(`${getActivePlayer().name}'s turn.`);
+  };
 
-    console.log(`${getActivePlayer().name}'s turn.`);
+  const checkWinner = () => {
+    const currentBoard = board.getBoard();
+    for (const combination of winningCombinations) {
+      const [a, b, c] = combination;
+      if (currentBoard[a] && currentBoard[a] === currentBoard[b] && currentBoard[a] === currentBoard[c]) {
+        return true
+      }
+    }
+    return false
+  }
+
+  const checkTie = () => {
+    for (const cell of board.getBoard()) {
+      if (cell == '') {
+        return false;
+      }
+    }
+    return true;
   };
 
   const playRound = (cell) => {
-    console.log(`${getActivePlayer().name} marked the cell ${cell}...`);
-    board.makeMove(cell, getActivePlayer().marker);
-  
-    /*  This is where we would check for a winner and handle that logic,
-        such as a win message. */
-
-    switchPlayerTurn();
-    printNewRound();
+    const moveDone = board.makeMove(cell, getActivePlayer().marker);
+    
+    if (moveDone == false) {
+      console.log(`This cell is not available. Try again!`);
+      return;
+    } else {
+      const winner = checkWinner();
+      if (winner) {
+        console.log(`Winner: ${getActivePlayer().name}`);
+        board.printBoard();
+        return;
+      } 
+      
+      const tie = checkTie();
+      if (tie) {
+        return;
+      }
+      
+      console.log(`${getActivePlayer().name} marked thecell ${cell}...`);
+      switchPlayerTurn();
+      printNewRound();
+    };
   };
 
-  printNewRound();
 
   return {playRound};
 })();
