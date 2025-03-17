@@ -110,7 +110,29 @@ const GameController = (function(
   };
 
 
-  return {playRound};
+  return {playRound, getActivePlayer, getBoard: board.getBoard};
+})();
+
+const ScreenController = (function () {
+  const game = GameController;
+  const playerTurnDiv = document.querySelector('.current-player');
+  const gameboard = document.querySelector('.gameboard');
+
+  const updateScreen = () => {
+    gameboard.textContent = "";
+
+    const board = game.getBoard();
+    const activePlayer = game.getActivePlayer();
+
+    playerTurnDiv.textContent = `${activePlayer.name}'s turn...`
+
+    board.forEach((index)=> {
+      const cellButton = document.createElement("button");
+      cellButton.classList.add("cell");
+      cellButton.dataset = index;
+      gameboard.appendChild(cellButton);
+    })
+  }
 })();
 
 const game = GameController;
