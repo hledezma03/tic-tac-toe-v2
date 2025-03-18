@@ -10,7 +10,7 @@ const winningCombinations = [
 ];
 
 const Gameboard = (function () {
-  const board = [];
+  let board = [];
 
   for (let i = 0; i < 9; i++) {
     board[i] = '';
@@ -28,7 +28,9 @@ const Gameboard = (function () {
   }
 
 
-  return {getBoard, makeMove};
+
+
+  return {board, getBoard, makeMove};
 })();
 
 const GameController = (function(
@@ -86,12 +88,12 @@ const GameController = (function(
       const winner = checkWinner();
       const gameWinner = document.querySelector(".game-winner")
       if (winner) {
-        gameWinner.textContent = `${getActivePlayer().name}`
+        gameWinner.textContent = `Winner: ${getActivePlayer().name}!`
       } 
       
       const tie = checkTie();
       if (tie) {
-        return;
+        gameWinner.textContent = `It's a tie!`
       }
       
       switchPlayerTurn();
@@ -99,39 +101,76 @@ const GameController = (function(
   };
 
 
-  return {playRound, getActivePlayer, getBoard: board.getBoard};
+  return {playRound, getActivePlayer, switchPlayerTurn, checkWinner, checkTie, getBoard: board.getBoard};
 })();
 
 const ScreenController = (function () {
   const game = GameController;
   const playerTurnDiv = document.querySelector('.current-player');
+  const resetBtn = document.querySelector('.reset-game')
   const gameboard = document.querySelector('.gameboard');
 
+  
   const updateScreen = () => {
     gameboard.textContent = "";
-
+    
     const board = game.getBoard();
     const activePlayer = game.getActivePlayer();
-
+    
     playerTurnDiv.textContent = `${activePlayer.name}'s turn...`
-
+    
     board.forEach((cell, index)=> {
       const cellButton = document.createElement("button");
       cellButton.classList.add("cell");
       cellButton.textContent = cell;
       cellButton.dataset.index = index;
       gameboard.appendChild(cellButton);
+    });
+  };
+
+  const enableButtons = () => {
+    const buttons = document.querySelectorAll('.cell');
+    buttons.forEach(button => {
+      button.disabled = false;
     })
   }
+
+  const disableButtons = () => {
+    const buttons = document.querySelectorAll('.cell');
+    buttons.forEach(button => {
+      button.disabled = true;
+    })
+  }
+  
+  const resetGame = () => {
+    gameboard.textContent = "";
+    Gameboard.board.fill('');
+    if (game.getActivePlayer().marker === 'O') {game.switchPlayerTurn();
+    }
+    const gameWinner = document.querySelector('.game-winner');
+    gameWinner.textContent = '';
+    enableButtons();
+    updateScreen();
+  }
+
+  
   const clickHadlerBoard = (e) => {
     const selectedCell = e.target.dataset.index;
-  
+    
     if (!selectedCell) return;
-  
+    
     game.playRound(selectedCell);
     updateScreen();
+
+    const winner = game.checkWinner();
+    const tie = game.checkTie();
+
+    if (winner || tie) {
+      disableButtons();
+    }
   };
   gameboard.addEventListener("click", clickHadlerBoard);
+  resetBtn.addEventListener("click", resetGame)
 
   updateScreen();
 })();
